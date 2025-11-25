@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx src/check-availability.ts",
+    "dev": "tsx src/index.ts",
     "build": "tsc",
-    "start": "node dist/check-availability.js",
+    "start": "node dist/index.js",
     "lint": "eslint ./src",
     "test": "jest"
   },
