@@ -1,4 +1,5 @@
-import { chromium } from 'playwright';
+import { chromium } from 'playwright-extra';
+import stealth from 'puppeteer-extra-plugin-stealth';
 import fs from 'node:fs/promises';
 
 type BookingStatus = 'booking-off' | 'full' | 'closed' | 'open';
@@ -30,8 +31,10 @@ class AvailabilityChecker {
   }
 
   async check(): Promise<void> {
+    chromium.use(stealth());
+
     const browser = await chromium.launch({
-      headless: false  // Set to true for background running
+      headless: true  // Set to true for background running
     });
 
     const context = await browser.newContext({
@@ -42,22 +45,23 @@ class AvailabilityChecker {
 
     try {
       console.log('Navigating to reservation page...');
-
       await page.goto(this.pageUrl, { waitUntil: 'domcontentloaded' });
 
+      const screenshotPromise = page.screenshot({path: './snapshots/debug-screenshot.png', fullPage: true});
+      
+      console.log('Waiting for API `booking-capacities` response...');
       const response = await page.waitForResponse(response =>
-          response.url().includes('booking-capacitiesV3') && response.status() === 200
+        response.url().includes('booking-capacitiesV3') && response.status() === 200
       );
 
       const saveResponsePromise = fs.writeFile('./snapshots/booking-capacities-response.json', await response.body());
-      const screenshotPromise = page.screenshot({path: './snapshots/debug-screenshot.png', fullPage: true});
       const jsonPromise = response.json();
       const [,,jsonData] = await Promise.all([saveResponsePromise, screenshotPromise, jsonPromise]);
 
       const result = this.analyzeResponse(jsonData);
       this.print(result);
     } catch (error) {
-      console.error('Error checking availability:', (error as Error).message);
+      throw Error('Error checking availability', {cause: error});
     } finally {
       await browser.close();
     }
