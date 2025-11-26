@@ -31,7 +31,7 @@ class AvailabilityChecker {
 
   async check(): Promise<void> {
     const browser = await chromium.launch({
-      headless: false  // Set to true for background running
+      headless: true  // Set to true for background running
     });
 
     const context = await browser.newContext({
