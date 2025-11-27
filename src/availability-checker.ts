@@ -34,6 +34,7 @@ class AvailabilityChecker {
       console.log('Navigating to reservation page...');
       await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
 
+      const mkDirPromise = fs.mkdir('./snapshots', { recursive: true });
       const screenshotPromise = page.screenshot({ path: './snapshots/debug-screenshot.png', fullPage: true });
 
       console.log('Waiting for API `booking-capacities` response...');
@@ -46,7 +47,7 @@ class AvailabilityChecker {
       const result = this.analyzeResponse(bookingSize, await response.json());
       this.print(result);
 
-      await Promise.all([saveResponsePromise, screenshotPromise]);
+      await Promise.all([mkDirPromise, screenshotPromise, saveResponsePromise]);
     } catch (error) {
       throw Error('Error checking availability', { cause: error });
     } finally {
