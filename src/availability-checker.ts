@@ -1,6 +1,5 @@
-import { chromium } from 'playwright-extra';
-import stealth from 'puppeteer-extra-plugin-stealth';
 import fs from 'node:fs/promises';
+import { type IBrowserProvider } from './browser-providers/types.js';
 
 type BookingStatus = 'booking-off' | 'full' | 'closed' | 'open';
 
@@ -22,52 +21,40 @@ export interface DayAvailability {
 }
 
 class AvailabilityChecker {
-  private pageUrl: string;
-  private bookingSize: number;  
+  private browserProvider: IBrowserProvider;
 
-  constructor(pageUrl: string, bookingSize: number) {
-    this.pageUrl = pageUrl;
-    this.bookingSize = bookingSize;
+  constructor(proxyProvider: IBrowserProvider) {
+    this.browserProvider = proxyProvider;
   }
 
-  async check(): Promise<void> {
-    chromium.use(stealth());
-
-    const browser = await chromium.launch({
-      headless: true  // Set to true for background running
-    });
-
-    const context = await browser.newContext({
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    });
-
-    const page = await context.newPage();
+  async check(pageUrl: string, bookingSize: number): Promise<void> {
+    const [browser, page] = await this.browserProvider.launchPage();
 
     try {
       console.log('Navigating to reservation page...');
-      await page.goto(this.pageUrl, { waitUntil: 'domcontentloaded' });
+      await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
 
-      const screenshotPromise = page.screenshot({path: './snapshots/debug-screenshot.png', fullPage: true});
-      
+      const screenshotPromise = page.screenshot({ path: './snapshots/debug-screenshot.png', fullPage: true });
+
       console.log('Waiting for API `booking-capacities` response...');
       const response = await page.waitForResponse(response =>
         response.url().includes('booking-capacitiesV3') && response.status() === 200
-      );
+        , { timeout: 60000 });
 
       const saveResponsePromise = fs.writeFile('./snapshots/booking-capacities-response.json', await response.body());
-      const jsonPromise = response.json();
-      const [,,jsonData] = await Promise.all([saveResponsePromise, screenshotPromise, jsonPromise]);
 
-      const result = this.analyzeResponse(jsonData);
+      const result = this.analyzeResponse(bookingSize, await response.json());
       this.print(result);
+
+      await Promise.all([saveResponsePromise, screenshotPromise]);
     } catch (error) {
-      throw Error('Error checking availability', {cause: error});
+      throw Error('Error checking availability', { cause: error });
     } finally {
       await browser.close();
     }
   }
 
-  protected analyzeResponse(response: BookingCapacityResponse): DayAvailability[] {
+  protected analyzeResponse(bookingSize: number, response: BookingCapacityResponse): DayAvailability[] {
     if (!response || !response.default) {
       console.log('No data to analyze');
       return [];
@@ -80,26 +67,24 @@ class AvailabilityChecker {
         if (!details.times) return false;
 
         return Object.values(details.times).some(sizes =>
-          sizes.includes(this.bookingSize)
+          sizes.includes(bookingSize)
         );
       })
       .map(([date, details]) => ({
-        date: date, 
+        date: date,
         times: Object.entries(details.times)
-          .filter(([, sizes]) => sizes.includes(this.bookingSize))
+          .filter(([, sizes]) => sizes.includes(bookingSize))
           .map(([time]) => time)
-      }));  
+      }));
   }
 
   private print(result: DayAvailability[]) {
-    console.log(`\n=== AVAILABILITY FOR ${this.bookingSize} PERSON(S) ===`);
-
     if (result.length === 0) {
-      console.log(`❌ NO AVAILABILITY - No slots available for ${this.bookingSize} persons`);
+      console.log(`❌ NO AVAILABILITY - No slots available`);
       return;
     }
 
-    console.log(`✅ AVAILABILITY FOUND - ${result.length} day(s) available for ${this.bookingSize} persons\n`);
+    console.log(`✅ AVAILABILITY FOUND - ${result.length} day(s) available\n`);
 
     result.forEach(x => {
       console.log(`📅 ${x.date}`);
