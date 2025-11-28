@@ -1,5 +1,5 @@
 import AvailabilityChecker from './availability-checker.js';
-import ConsoleOutput from './availability-result-handlers/ConsoleOutput.js';
+import Notification from './availability-result-handlers/notification.js';
 import Local from './browser-providers/local.js';
 import WebShare from './proxy-providers/webshare.js';
 // import ZenRows from './browser-providers/zenrows.js';
@@ -10,5 +10,5 @@ const BOOKING_SIZE = 2;
 
 const browserProvider = new Local(new WebShare());
 // const browserProvider = new ZenRows();
-const checker = new AvailabilityChecker(browserProvider, new ConsoleOutput());
+const checker = new AvailabilityChecker(browserProvider, new Notification());
 checker.check(URL, BOOKING_SIZE);

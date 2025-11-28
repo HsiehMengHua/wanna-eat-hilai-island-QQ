@@ -1,5 +1,5 @@
-import { DayAvailability } from "../types.js";
-import { IAvailabilityResultHandler } from "./types.js";
+import { type DayAvailability } from "../types.js";
+import { type IAvailabilityResultHandler } from "./types.js";
 
 export default class ConsoleOutput implements IAvailabilityResultHandler {
     process(result: DayAvailability[]): Promise<void> {
