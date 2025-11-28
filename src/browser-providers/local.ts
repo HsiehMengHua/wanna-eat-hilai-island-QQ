@@ -2,21 +2,21 @@ import { type Browser, type Page } from "playwright";
 import { type IBrowserProvider } from "./types.js";
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
-
-interface Proxy {
-    server: string;
-    bypass?: string;
-    username?: string;
-    password?: string;
-}
+import { type IProxyProvider } from "../proxy-providers/types.js";
 
 export default class Local implements IBrowserProvider {
+    private proxyProvider: IProxyProvider;
+
+    constructor(proxyProvider: IProxyProvider) {
+        this.proxyProvider = proxyProvider;
+    }
+
     async launchPage(): Promise<[Browser, Page]> {
         chromium.use(stealth());
 
         const browser = await chromium.launch({
             headless: true,  // Set to true for background running
-            proxy: this.getRandomProxy()
+            proxy: await this.proxyProvider.getRandomProxy()
         });
 
         const context = await browser.newContext({
@@ -49,63 +49,5 @@ export default class Local implements IBrowserProvider {
         ];
 
         return userAgents[Math.floor(Math.random() * userAgents.length)];
-    }
-
-    private getRandomProxy(): Proxy {
-        const proxies = [
-            {
-                server: '142.111.48.253:7030',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '31.59.20.176:6754',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '23.95.150.145:6114',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '198.23.239.134:6540',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '107.172.163.27:6543',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '198.105.121.200:6462',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '64.137.96.74:6641',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '84.247.60.125:6095',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '216.10.27.159:6837',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-            {
-                server: '142.111.67.146:5611',
-                username: 'dqlvgjks',
-                password: '9jtw6e2v3k5s'
-            },
-        ];
-
-
-        return proxies[Math.floor(Math.random() * proxies.length)];
     }
 }
