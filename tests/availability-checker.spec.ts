@@ -1,9 +1,15 @@
 import '@jest/globals';
-import AvailabilityChecker, { type BookingCapacityResponse, type DayAvailability } from '../src/availability-checker';
+import AvailabilityChecker from '../src/availability-checker';
 import { type IBrowserProvider } from '../src/browser-providers/types';
+import { type BookingCapacityResponse, type DayAvailability } from '../src/types';
+import { type IAvailabilityResultHandler } from '../src/availability-result-handlers/types';
 
 const mockProxyProvider: IBrowserProvider = {
     launchPage: jest.fn()
+};
+
+const mockResultHandler: IAvailabilityResultHandler = {
+    process: jest.fn()
 };
 
 describe('Booking Availability Analysis', () => {
@@ -11,7 +17,7 @@ describe('Booking Availability Analysis', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        checker = new AvailabilityCheckerForTest(mockProxyProvider);
+        checker = new AvailabilityCheckerForTest(mockProxyProvider, mockResultHandler);
     });
 
     it('3 dates have time slots but only 2 dates are available for 2 persons', () => {
