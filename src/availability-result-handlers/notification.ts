@@ -28,6 +28,10 @@ interface BarkPayload {
 
 export default class Notification implements IAvailabilityResultHandler {
     async process(result: DayAvailability[]): Promise<void> {
+        if (result.length === 0) {
+            return;
+        }
+
         const url = 'https://api.day.app/ofWkNMgQWh4xP3Dv9PAZCV';
         const payload: BarkPayload = {
             title: "島語有位置🤯🤯🤯 快去看！！！",

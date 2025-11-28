@@ -1,4 +1,5 @@
 import Notification from '../../src/availability-result-handlers/notification';
+import { DayAvailability } from '../../src/types';
 
 describe('Test Proxy Provider - WebShare', () => {
     const originalFetch = global.fetch;
@@ -14,6 +15,15 @@ describe('Test Proxy Provider - WebShare', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+    });
+
+    it('should not push notification if no availability', async () => {
+        const sut = new Notification();
+        const mockResult: DayAvailability[] = [];
+
+        await sut.process(mockResult);
+
+        expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('get all and return in the type `Proxy`', async () => {
