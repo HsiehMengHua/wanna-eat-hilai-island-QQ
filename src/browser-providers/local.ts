@@ -13,21 +13,27 @@ export default class Local implements IBrowserProvider {
 
     async launchPage(): Promise<[Browser, Page]> {
         chromium.use(stealth());
+        const proxy = await this.proxyProvider.getRandomProxy();
+        const ua = this.getRandomUserAgent();
 
-        const browser = await chromium.launch({
-            headless: true,  // Set to true for background running
-            proxy: await this.proxyProvider.getRandomProxy()
-        });
+        try {
+            const browser = await chromium.launch({
+                headless: true,  // Set to true for background running
+                proxy: proxy
+            });
 
-        const context = await browser.newContext({
-            userAgent: this.getRandomUserAgent(),
-            extraHTTPHeaders: {
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept': 'text/html,application/xhtml+xml'
-            }
-        });
+            const context = await browser.newContext({
+                userAgent: ua,
+                extraHTTPHeaders: {
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept': 'text/html,application/xhtml+xml'
+                }
+            });
 
-        return [browser, await context.newPage()];
+            return [browser, await context.newPage()];
+        } catch (error) {
+            throw new Error(`An error occurs when launching the browser. (proxy: ${proxy.server}, user agent: ${ua})`, { cause: error });
+        }
     }
 
     private getRandomUserAgent(): string {

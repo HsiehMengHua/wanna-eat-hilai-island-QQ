@@ -9,8 +9,12 @@ export default class WebShare implements IProxyProvider {
         }
 
         const textContent = await response.text();
+        const lines = textContent.split(/\r?\n/);
+        if (lines[lines.length - 1] === '') {
+            lines.pop();
+        }
 
-        return textContent.split(/\r?\n/).map(x => {
+        return lines.map(x => {
             const [ip, port, username, password] = x.split(':');
 
             return {
