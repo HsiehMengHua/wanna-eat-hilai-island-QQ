@@ -1,8 +1,8 @@
 import '@jest/globals';
-import AvailabilityChecker from '../src/availability-checker';
-import { type IBrowserProvider } from '../src/browser-providers/types';
-import { type BookingCapacityResponse, type DayAvailability } from '../src/types';
-import { type IAvailabilityResultHandler } from '../src/availability-result-handlers/types';
+import InlineChecker from '../../src/availability-checkers/inline-checker';
+import { type IBrowserProvider } from '../../src/browser-providers/types';
+import { type BookingCapacityResponse, type DayAvailability } from '../../src/types';
+import { type IAvailabilityResultHandler } from '../../src/availability-result-handlers/types';
 
 const mockProxyProvider: IBrowserProvider = {
     launchPage: jest.fn()
@@ -13,11 +13,11 @@ const mockResultHandler: IAvailabilityResultHandler = {
 };
 
 describe('Booking Availability Analysis', () => {
-    let checker: AvailabilityCheckerForTest;
+    let checker: InlineCheckerForTest;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        checker = new AvailabilityCheckerForTest(mockProxyProvider, mockResultHandler);
+        checker = new InlineCheckerForTest(mockProxyProvider, mockResultHandler);
     });
 
     it('3 dates have time slots but only 2 dates are available for 2 persons', () => {
@@ -138,7 +138,7 @@ describe('Booking Availability Analysis', () => {
     });
 });
 
-class AvailabilityCheckerForTest extends AvailabilityChecker {
+class InlineCheckerForTest extends InlineChecker {
     analyzeResponse(bookingSize: number, response: BookingCapacityResponse): DayAvailability[] {
         return super.analyzeResponse(bookingSize, response);
     }

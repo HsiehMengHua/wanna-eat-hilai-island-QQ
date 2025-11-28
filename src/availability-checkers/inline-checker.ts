@@ -1,19 +1,45 @@
 import fs from 'node:fs/promises';
-import { type IBrowserProvider } from './browser-providers/types.js';
-import { type IAvailabilityResultHandler } from './availability-result-handlers/types.js';
-import { type BookingCapacityResponse, type DayAvailability } from './types.js';
+import { type IBrowserProvider } from '../browser-providers/types.js';
+import { type IAvailabilityResultHandler } from '../availability-result-handlers/types.js';
+import { type BookingCapacityResponse, type DayAvailability } from '../types.js';
+import { type IAvailabilityChecker } from './types.js';
+import { type Browser, type Page } from 'playwright';
 
-export default class AvailabilityChecker {
+export default class InlineChecker implements IAvailabilityChecker {
   private browserProvider: IBrowserProvider;
   private resultHandler: IAvailabilityResultHandler;
+  private launchedObjects: [Browser, Page] | undefined;
 
   constructor(proxyProvider: IBrowserProvider, resultHandler: IAvailabilityResultHandler) {
     this.browserProvider = proxyProvider;
     this.resultHandler = resultHandler;
   }
 
+  get browser(): Promise<Browser> {
+    return (async () => {
+      if (this.launchedObjects) {
+        return this.launchedObjects[0];
+      }
+
+      this.launchedObjects = await this.browserProvider.launchPage();
+      return this.launchedObjects[0];
+    })();
+  }
+
+  get page(): Promise<Page> {
+    return (async () => {
+      if (this.launchedObjects) {
+        return this.launchedObjects[1];
+      }
+
+      this.launchedObjects = await this.browserProvider.launchPage();
+      return this.launchedObjects[1];
+    })();
+  }
+
   async check(pageUrl: string, bookingSize: number): Promise<void> {
-    const [browser, page] = await this.browserProvider.launchPage();
+    const browser = await this.browser;
+    const page = await this.page;
 
     try {
       console.log('Navigating to reservation page...');
@@ -30,6 +56,8 @@ export default class AvailabilityChecker {
       const saveResponsePromise = fs.writeFile('./snapshots/booking-capacities-response.json', await response.body());
 
       const result = this.analyzeResponse(bookingSize, await response.json());
+      console.log(`${result.length} day(s) available`);
+
       await this.resultHandler.process(result);
 
       await Promise.all([mkDirPromise, screenshotPromise, saveResponsePromise]);
