@@ -1,30 +1,15 @@
 import fs from 'node:fs/promises';
 import { type IBrowserProvider } from './browser-providers/types.js';
+import { type IAvailabilityResultHandler } from './availability-result-handlers/types.js';
+import { type BookingCapacityResponse, type DayAvailability } from './types.js';
 
-type BookingStatus = 'booking-off' | 'full' | 'closed' | 'open';
-
-interface BookingCapacityDetails {
-  times: Record<string, number[]>; // time slot -> available party sizes
-  dinerTime: number;
-  maxBookingSize: number;
-  minBookingSize: number;
-  status: BookingStatus;
-}
-
-export interface BookingCapacityResponse {
-  default: Record<string, BookingCapacityDetails>; // date -> availability
-}
-
-export interface DayAvailability {
-  date: string
-  times: string[]
-}
-
-class AvailabilityChecker {
+export default class AvailabilityChecker {
   private browserProvider: IBrowserProvider;
+  private resultHandler: IAvailabilityResultHandler;
 
-  constructor(proxyProvider: IBrowserProvider) {
+  constructor(proxyProvider: IBrowserProvider, resultHandler: IAvailabilityResultHandler) {
     this.browserProvider = proxyProvider;
+    this.resultHandler = resultHandler;
   }
 
   async check(pageUrl: string, bookingSize: number): Promise<void> {
@@ -45,7 +30,7 @@ class AvailabilityChecker {
       const saveResponsePromise = fs.writeFile('./snapshots/booking-capacities-response.json', await response.body());
 
       const result = this.analyzeResponse(bookingSize, await response.json());
-      this.print(result);
+      await this.resultHandler.process(result);
 
       await Promise.all([mkDirPromise, screenshotPromise, saveResponsePromise]);
     } catch (error) {
@@ -78,23 +63,4 @@ class AvailabilityChecker {
           .map(([time]) => time)
       }));
   }
-
-  private print(result: DayAvailability[]) {
-    if (result.length === 0) {
-      console.log(`❌ NO AVAILABILITY - No slots available`);
-      return;
-    }
-
-    console.log(`✅ AVAILABILITY FOUND - ${result.length} day(s) available\n`);
-
-    result.forEach(x => {
-      console.log(`📅 ${x.date}`);
-      console.log(`   Available time slots:`);
-      x.times.forEach(time => {
-        console.log(`      ✓ ${time}`);
-      });
-    });
-  }
 }
-
-export default AvailabilityChecker;
