@@ -1,16 +1,21 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+import { defineConfig } from 'eslint/config';
+import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
-  { 
-    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], 
-    plugins: { js }, 
-    extends: ["js/recommended"], 
+  {
+    files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
+    plugins: {
+      js,
+      '@stylistic': stylistic
+    },
+    extends: ['js/recommended'],
     languageOptions: { globals: globals.browser },
     rules: {
-        semi: ["error", "always"]
+      semi: ['error', 'always'],
+      '@stylistic/quotes': ['error', 'single'],
     }
   },
   tseslint.configs.recommended,

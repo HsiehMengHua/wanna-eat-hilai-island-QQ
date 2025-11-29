@@ -1,7 +1,7 @@
-import { type IAvailabilityResultHandler } from "../availability-result-handlers/types.js";
-import { type IBrowserProvider } from "../browser-providers/types.js";
-import { DayAvailability } from "../types.js";
-import { type IAvailabilityChecker } from "./types.js";
+import { type IAvailabilityResultHandler } from '../availability-result-handlers/types';
+import { type IBrowserProvider } from '../browser-providers/types';
+import { DayAvailability } from '../types';
+import { type IAvailabilityChecker } from './types';
 import fs from 'node:fs/promises';
 
 export default class EztableChecker implements IAvailabilityChecker {
@@ -44,7 +44,7 @@ export default class EztableChecker implements IAvailabilityChecker {
 
             const yearMonth = await calendarLocator.locator('.rdp-caption_label').textContent();
             if (!yearMonth) {
-                throw new Error(`Cannot retrieve year and month from the calendar`);
+                throw new Error('Cannot retrieve year and month from the calendar');
             }
 
             const dayLocators = await calendarLocator.locator('.rdp-day:not(.rdp-disabled)').all();

@@ -24,32 +24,32 @@ describe('Booking Availability Analysis', () => {
         const bookingSize = 2;
         const response: BookingCapacityResponse = {
             default: {
-                "2026-01-01": {
+                '2026-01-01': {
                     times: {
-                        "14:15": [1, 2]
+                        '14:15': [1, 2]
                     },
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "open"
+                    status: 'open'
                 },
-                "2026-01-02": {
+                '2026-01-02': {
                     times: {
-                        "14:15": [1, 2, 3, 4, 5, 6, 7]
+                        '14:15': [1, 2, 3, 4, 5, 6, 7]
                     },
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "open"
+                    status: 'open'
                 },
-                "2026-01-03": {
+                '2026-01-03': {
                     times: {
-                        "14:15": [3, 4, 5, 6, 7]
+                        '14:15': [3, 4, 5, 6, 7]
                     },
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "open"
+                    status: 'open'
                 },
             }
         };
@@ -57,24 +57,24 @@ describe('Booking Availability Analysis', () => {
         const result = checker.analyzeResponse(bookingSize, response);
 
         expect(result).toHaveLength(2);
-        expect(result).toContainEqual({ date: "2026-01-01", times: ["14:15"] } as DayAvailability);
-        expect(result).toContainEqual({ date: "2026-01-02", times: ["14:15"] } as DayAvailability);
+        expect(result).toContainEqual({ date: '2026-01-01', times: ['14:15'] } as DayAvailability);
+        expect(result).toContainEqual({ date: '2026-01-02', times: ['14:15'] } as DayAvailability);
     });
 
     it('A date has 3 time slots but only 2 slots are available for 2 persons', () => {
         const bookingSize = 2;
         const response: BookingCapacityResponse = {
             default: {
-                "2026-01-01": {
+                '2026-01-01': {
                     times: {
-                        "11:00": [1, 2],
-                        "14:00": [1, 2, 3, 4],
-                        "17:00": [5, 6, 7]
+                        '11:00': [1, 2],
+                        '14:00': [1, 2, 3, 4],
+                        '17:00': [5, 6, 7]
                     },
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "open"
+                    status: 'open'
                 },
             }
         };
@@ -82,19 +82,19 @@ describe('Booking Availability Analysis', () => {
         const result = checker.analyzeResponse(bookingSize, response);
 
         expect(result).toHaveLength(1);
-        expect(result).toContainEqual({ date: "2026-01-01", times: ["11:00", "14:00"] } as DayAvailability);
+        expect(result).toContainEqual({ date: '2026-01-01', times: ['11:00', '14:00'] } as DayAvailability);
     });
 
     it('status is "open" for a date but no time slots', () => {
         const bookingSize = 2;
         const response: BookingCapacityResponse = {
             default: {
-                "2026-01-01": {
+                '2026-01-01': {
                     times: {},
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "open"
+                    status: 'open'
                 },
             }
         };
@@ -108,26 +108,26 @@ describe('Booking Availability Analysis', () => {
         const bookingSize = 2;
         const response: BookingCapacityResponse = {
             default: {
-                "2026-01-01": {
+                '2026-01-01': {
                     times: {},
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "booking-off"
+                    status: 'booking-off'
                 },
-                "2026-01-02": {
+                '2026-01-02': {
                     times: {},
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "full"
+                    status: 'full'
                 },
-                "2026-01-03": {
+                '2026-01-03': {
                     times: {},
                     dinerTime: 0,
                     maxBookingSize: 7,
                     minBookingSize: 1,
-                    status: "closed"
+                    status: 'closed'
                 },
             }
         };
