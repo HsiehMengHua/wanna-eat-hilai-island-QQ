@@ -33,7 +33,7 @@ export default class InlineChecker implements IAvailabilityChecker {
       const result = this.analyzeResponse(target.bookingSize, await response.json());
       console.log(`${result.length} day(s) available`);
 
-      await this.resultHandler.process(result);
+      await this.resultHandler.process(target.name, result);
 
       await Promise.all([mkDirPromise, screenshotPromise, saveResponsePromise]);
     } catch (error) {

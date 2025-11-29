@@ -1,5 +1,5 @@
-import { DayAvailability } from "../types.js";
-import { type IAvailabilityResultHandler } from "./types.js";
+import { DayAvailability } from '../types.js';
+import { type IAvailabilityResultHandler } from './types.js';
 
 // see the doc: https://bark.day.app/#/en-us/tutorial?id=request-parameters
 interface BarkPayload {
@@ -27,17 +27,17 @@ interface BarkPayload {
 }
 
 export default class Notification implements IAvailabilityResultHandler {
-    async process(result: DayAvailability[]): Promise<void> {
+    async process(name: string, result: DayAvailability[]): Promise<void> {
         if (result.length === 0) {
             return;
         }
 
         const url = 'https://api.day.app/ofWkNMgQWh4xP3Dv9PAZCV';
         const payload: BarkPayload = {
-            title: "島語有位置🤯🤯🤯 快去看！！！",
+            title: `${name}有位置🤯🤯🤯 快去看！！！`,
             body: result.map(x => x.date).join('、'),
-            group: "hilai-island-availibility",
-            url: "https://inline.app/booking/-NeqTSgDQOAYi30lg4a7:inline-live-3/-NeqTStJZDIBQHEMSDI8"
+            group: 'hilai-island-availibility',
+            url: 'https://inline.app/booking/-NeqTSgDQOAYi30lg4a7:inline-live-3/-NeqTStJZDIBQHEMSDI8'
         };
 
         const response = await fetch(url, {

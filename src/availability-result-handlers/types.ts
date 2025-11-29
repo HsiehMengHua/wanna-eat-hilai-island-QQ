@@ -1,5 +1,5 @@
-import { DayAvailability } from "../types.js";
+import { type DayAvailability } from '../types.js';
 
 export interface IAvailabilityResultHandler {
-    process(result: DayAvailability[]): Promise<void>;
+    process(name: string, result: DayAvailability[]): Promise<void>;
 }

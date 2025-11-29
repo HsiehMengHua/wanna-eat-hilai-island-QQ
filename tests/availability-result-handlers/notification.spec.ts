@@ -22,7 +22,7 @@ describe('Test Proxy Provider - WebShare', () => {
         const sut = new Notification();
         const mockResult: DayAvailability[] = [];
 
-        await sut.process(mockResult);
+        await sut.process('test', mockResult);
 
         expect(mockFetch).not.toHaveBeenCalled();
     });
@@ -36,7 +36,7 @@ describe('Test Proxy Provider - WebShare', () => {
             status: 200,
         });
 
-        await sut.process(mockResult);
+        await sut.process('test', mockResult);
 
         expect(mockFetch).toHaveBeenCalledTimes(1);
         expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('https://api.day.app'), expect.objectContaining({

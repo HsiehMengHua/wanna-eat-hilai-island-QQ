@@ -1,22 +1,24 @@
-import { type DayAvailability } from "../types.js";
-import { type IAvailabilityResultHandler } from "./types.js";
+import { type DayAvailability } from '../types.js';
+import { type IAvailabilityResultHandler } from './types.js';
 
 export default class ConsoleOutput implements IAvailabilityResultHandler {
-    process(result: DayAvailability[]): Promise<void> {
+    process(name: string, result: DayAvailability[]): Promise<void> {
         if (result.length === 0) {
-            console.log(`❌ NO AVAILABILITY - No slots available`);
+            console.log(`❌ NO AVAILABILITY for '${name}' - No slots available`);
             return Promise.resolve();
         }
 
-        console.log(`✅ AVAILABILITY FOUND - ${result.length} day(s) available\n`);
+        let outputStr = `✅ AVAILABILITY FOUND for '${name}' - ${result.length} day(s) available\n`;
 
         result.forEach(x => {
-            console.log(`📅 ${x.date}`);
-            console.log(`   Available time slots:`);
+            outputStr += `📅 ${x.date}\n`;
+            outputStr += '   Available time slots:\n';
             x.times.forEach(time => {
-                console.log(`      ✓ ${time}`);
+                outputStr += `      ✓ ${time}`;
             });
         });
+
+        console.log(outputStr);
 
         return Promise.resolve();
     }

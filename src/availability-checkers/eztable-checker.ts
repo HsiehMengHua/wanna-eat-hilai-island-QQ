@@ -1,6 +1,7 @@
+import { Locator, type Page } from 'playwright';
 import { type IAvailabilityResultHandler } from '../availability-result-handlers/types';
 import { type IBrowserProvider } from '../browser-providers/types';
-import { CheckItem, DayAvailability } from '../types';
+import { type CheckItem, type DayAvailability } from '../types';
 import { type IAvailabilityChecker } from './types';
 import fs from 'node:fs/promises';
 
@@ -20,16 +21,10 @@ export default class EztableChecker implements IAvailabilityChecker {
             console.log(`Navigating to reservation page for '${target.name}'...`);
             await page.goto(target.pageUrl, { waitUntil: 'domcontentloaded' });
 
-            const modalCloseLocator = page.locator('.ijwfSP.open .htQmZe');
-            if (await modalCloseLocator.count() > 0) {
-                await modalCloseLocator.click();
-            }
+            await this.closeAdIfPresent(page);
 
             const peopleSelectLocator = page.locator('.desktop .dESOMr');
-            await peopleSelectLocator.click();
-
-            const peopleOptionLocator = peopleSelectLocator.locator(`option[value="${target.bookingSize}"]`);
-            if (await peopleOptionLocator.count() === 0 || await peopleOptionLocator.getAttribute('disabled') !== null) {
+            if (!await this.checkBookingSize(peopleSelectLocator, target.bookingSize)) {
                 console.log(`No available days for ${target.bookingSize} person(s)`);
                 return;
             }
@@ -57,7 +52,7 @@ export default class EztableChecker implements IAvailabilityChecker {
             // todo: retreive time slots
             // todo: retreive dates from next months
 
-            await this.resultHandler.process(dates.map(x => ({ date: x, times: [] } as DayAvailability)));
+            await this.resultHandler.process(target.name, dates.map(x => ({ date: x, times: [] } as DayAvailability)));
 
             await Promise.all([mkDirPromise, screenshotPromise]);
 
@@ -66,5 +61,18 @@ export default class EztableChecker implements IAvailabilityChecker {
         } finally {
             await browser.close();
         }
+    }
+
+    private async closeAdIfPresent(page: Page) {
+        const modalCloseLocator = page.locator('.ijwfSP.open .htQmZe');
+        if (await modalCloseLocator.count() > 0) {
+            await modalCloseLocator.click();
+        }
+    }
+
+    private async checkBookingSize(peopleSelectLocator: Locator, bookingSize: number) {
+        await peopleSelectLocator.click();
+        const peopleOptionLocator = peopleSelectLocator.locator(`option[value="${bookingSize}"]`);
+        return await peopleOptionLocator.count() > 0 && await peopleOptionLocator.getAttribute('disabled') === null;
     }
 }
