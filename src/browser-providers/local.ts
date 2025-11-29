@@ -1,8 +1,8 @@
-import { type Browser, type Page } from "playwright";
-import { type IBrowserProvider } from "./types.js";
+import { type Browser, type Page } from 'playwright';
+import { type IBrowserProvider } from './types.js';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
-import { type IProxyProvider } from "../proxy-providers/types.js";
+import { type IProxyProvider } from '../proxy-providers/types.js';
 
 export default class Local implements IBrowserProvider {
     private proxyProvider: IProxyProvider;

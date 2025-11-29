@@ -9,6 +9,12 @@ export default class EztableChecker implements IAvailabilityChecker {
     private browserProvider: IBrowserProvider;
     private resultHandler: IAvailabilityResultHandler;
 
+    readonly PEOPLE_SELECT_SELECTOR: string = '.desktop .dESOMr';
+    readonly CALENDAR_SELECTOR: string = '.desktop .rdp-months';
+    readonly ACTIVE_DAY_SELECTOR: string = '.rdp-day:not(.rdp-disabled):not(.rdp-hidden):not(.rdp-outside)';
+    readonly NEXT_MONTH_SELECTOR: string = '.rdp-button_next';
+    readonly MONTH_CAPTION_SELECTOR = '.rdp-caption_label';
+
     constructor(browserProvider: IBrowserProvider, resultHandler: IAvailabilityResultHandler) {
         this.browserProvider = browserProvider;
         this.resultHandler = resultHandler;
@@ -23,7 +29,7 @@ export default class EztableChecker implements IAvailabilityChecker {
 
             await this.closeAdIfPresent(page);
 
-            const peopleSelectLocator = page.locator('.desktop .dESOMr');
+            const peopleSelectLocator = page.locator(this.PEOPLE_SELECT_SELECTOR);
             if (!await this.checkBookingSize(peopleSelectLocator, target.bookingSize)) {
                 console.log(`No available days for ${target.bookingSize} person(s)`);
                 return;
@@ -31,31 +37,30 @@ export default class EztableChecker implements IAvailabilityChecker {
 
             await peopleSelectLocator.selectOption('' + target.bookingSize);
 
-            const calendarLocator = page.locator('.desktop .rdp-month');
+            const calendarLocator = page.locator(this.CALENDAR_SELECTOR);
             await calendarLocator.waitFor();
 
             const mkDirPromise = fs.mkdir('./snapshots', { recursive: true });
             const screenshotPromise = page.screenshot({ path: './snapshots/debug-screenshot-eztable.png', fullPage: true });
 
-            const yearMonth = await calendarLocator.locator('.rdp-caption_label').textContent();
-            if (!yearMonth) {
-                throw new Error('Cannot retrieve year and month from the calendar');
-            }
-
-            const dayLocators = await calendarLocator.locator('.rdp-day:not(.rdp-disabled)').all();
             const dates = [];
 
-            for (const locator of dayLocators) {
-                dates.push(`${yearMonth.replaceAll(/\s/g, '')}/${await locator.textContent()}`);
-            }
+            for (let i = 0; i < 3; i++) {
+                const dayLocators = await calendarLocator.locator(this.ACTIVE_DAY_SELECTOR).all();
+                dates.push(...await Promise.all(dayLocators.map(async x => await x.getAttribute('data-day'))));
 
-            // todo: retreive time slots
-            // todo: retreive dates from next months
+                const nextMonthLocator = calendarLocator.locator(this.NEXT_MONTH_SELECTOR);
+                const hasNextMonth = await nextMonthLocator.getAttribute('aria-disabled') !== 'true';
+                if (!hasNextMonth) {
+                    break;
+                }
+
+                await nextMonthLocator.click();
+            }
 
             await this.resultHandler.process(target.name, dates.map(x => ({ date: x, times: [] } as DayAvailability)));
 
-            await Promise.all([mkDirPromise, screenshotPromise]);
-
+            await Promise.allSettled([mkDirPromise, screenshotPromise]);
         } catch (error) {
             throw new Error(`Error checking availability for '${target.name}'`, { cause: error });
         } finally {
