@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { type IBrowserProvider } from '../browser-providers/types';
 import { type IAvailabilityResultHandler } from '../availability-result-handlers/types';
-import { type BookingCapacityResponse, type DayAvailability } from '../types';
+import { CheckItem, type BookingCapacityResponse, type DayAvailability } from '../types';
 import { type IAvailabilityChecker } from './types';
 
 export default class InlineChecker implements IAvailabilityChecker {
@@ -13,12 +13,12 @@ export default class InlineChecker implements IAvailabilityChecker {
     this.resultHandler = resultHandler;
   }
 
-  async check(pageUrl: string, bookingSize: number): Promise<void> {
+  async check(target: CheckItem): Promise<void> {
     const [browser, page] = await this.browserProvider.launchPage();
 
     try {
-      console.log(`Navigating to reservation page '${pageUrl}'...`);
-      await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
+      console.log(`Navigating to reservation page for '${target.name}'...`);
+      await page.goto(target.pageUrl, { waitUntil: 'domcontentloaded' });
 
       const mkDirPromise = fs.mkdir('./snapshots', { recursive: true });
       const screenshotPromise = page.screenshot({ path: './snapshots/debug-screenshot.png', fullPage: true });
@@ -30,14 +30,14 @@ export default class InlineChecker implements IAvailabilityChecker {
 
       const saveResponsePromise = fs.writeFile('./snapshots/booking-capacities-response.json', await response.body());
 
-      const result = this.analyzeResponse(bookingSize, await response.json());
+      const result = this.analyzeResponse(target.bookingSize, await response.json());
       console.log(`${result.length} day(s) available`);
 
       await this.resultHandler.process(result);
 
       await Promise.all([mkDirPromise, screenshotPromise, saveResponsePromise]);
     } catch (error) {
-      throw new Error(`Error checking availability of the page '${pageUrl}'`, { cause: error });
+      throw new Error(`Error checking availability for '${target.name}'`, { cause: error });
     } finally {
       await browser.close();
     }

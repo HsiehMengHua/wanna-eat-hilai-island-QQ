@@ -1,6 +1,7 @@
 export interface CheckItem {
-    PageUrl: string;
-    BookingSize: number
+    name: string;
+    pageUrl: string;
+    bookingSize: number;
 }
 
 export type BookingStatus = 'booking-off' | 'full' | 'closed' | 'open';
@@ -18,6 +19,6 @@ export interface BookingCapacityResponse {
 }
 
 export interface DayAvailability {
-    date: string
-    times: string[]
+    date: string;
+    times: string[];
 }

@@ -1,6 +1,6 @@
 import { type IAvailabilityResultHandler } from '../availability-result-handlers/types';
 import { type IBrowserProvider } from '../browser-providers/types';
-import { DayAvailability } from '../types';
+import { CheckItem, DayAvailability } from '../types';
 import { type IAvailabilityChecker } from './types';
 import fs from 'node:fs/promises';
 
@@ -13,12 +13,12 @@ export default class EztableChecker implements IAvailabilityChecker {
         this.resultHandler = resultHandler;
     }
 
-    async check(pageUrl: string, bookingSize: number): Promise<void> {
+    async check(target: CheckItem): Promise<void> {
         const [browser, page] = await this.browserProvider.launchPage();
 
         try {
-            console.log('Navigating to reservation page...');
-            await page.goto(pageUrl, { waitUntil: 'domcontentloaded' });
+            console.log(`Navigating to reservation page for '${target.name}'...`);
+            await page.goto(target.pageUrl, { waitUntil: 'domcontentloaded' });
 
             const modalCloseLocator = page.locator('.ijwfSP.open .htQmZe');
             if (await modalCloseLocator.count() > 0) {
@@ -28,13 +28,13 @@ export default class EztableChecker implements IAvailabilityChecker {
             const peopleSelectLocator = page.locator('.desktop .dESOMr');
             await peopleSelectLocator.click();
 
-            const peopleOptionLocator = peopleSelectLocator.locator(`option[value="${bookingSize}"]`);
+            const peopleOptionLocator = peopleSelectLocator.locator(`option[value="${target.bookingSize}"]`);
             if (await peopleOptionLocator.count() === 0 || await peopleOptionLocator.getAttribute('disabled') !== null) {
-                console.log(`No available days for ${bookingSize} person(s)`);
+                console.log(`No available days for ${target.bookingSize} person(s)`);
                 return;
             }
 
-            await peopleSelectLocator.selectOption('' + bookingSize);
+            await peopleSelectLocator.selectOption('' + target.bookingSize);
 
             const calendarLocator = page.locator('.desktop .rdp-month');
             await calendarLocator.waitFor();
@@ -62,7 +62,7 @@ export default class EztableChecker implements IAvailabilityChecker {
             await Promise.all([mkDirPromise, screenshotPromise]);
 
         } catch (error) {
-            throw new Error(`Error checking availability of the page '${pageUrl}'`, { cause: error });
+            throw new Error(`Error checking availability for '${target.name}'`, { cause: error });
         } finally {
             await browser.close();
         }

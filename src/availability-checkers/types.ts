@@ -1,5 +1,7 @@
+import { CheckItem } from '../types';
+
 export interface IAvailabilityChecker {
-    check(pageUrl: string, bookingSize: number): Promise<void>
+    check(target: CheckItem): Promise<void>
 }
 
 export interface ICheckerFactory {

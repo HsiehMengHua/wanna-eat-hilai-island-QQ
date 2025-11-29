@@ -12,10 +12,10 @@ export default class Handler {
         const promises: Promise<void>[] = [];
 
         for (const target of targets) {
-            const checker = this.checkerFactory.get(target.PageUrl);
+            const checker = this.checkerFactory.get(target.pageUrl);
 
             if (checker) {
-                promises.push(checker.check(target.PageUrl, target.BookingSize));
+                promises.push(checker.check(target));
             }
         }
 
