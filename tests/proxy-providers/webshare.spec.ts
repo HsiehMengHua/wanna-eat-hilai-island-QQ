@@ -1,3 +1,4 @@
+import '@jest/globals';
 import WebShare from '../../src/proxy-providers/webshare';
 
 describe('Test Proxy Provider - WebShare', () => {

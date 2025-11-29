@@ -8,8 +8,8 @@ export default class EztableChecker implements IAvailabilityChecker {
     private browserProvider: IBrowserProvider;
     private resultHandler: IAvailabilityResultHandler;
 
-    constructor(proxyProvider: IBrowserProvider, resultHandler: IAvailabilityResultHandler) {
-        this.browserProvider = proxyProvider;
+    constructor(browserProvider: IBrowserProvider, resultHandler: IAvailabilityResultHandler) {
+        this.browserProvider = browserProvider;
         this.resultHandler = resultHandler;
     }
 

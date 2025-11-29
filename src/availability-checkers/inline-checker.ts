@@ -1,15 +1,15 @@
 import fs from 'node:fs/promises';
-import { type IBrowserProvider } from '../browser-providers/types.js';
-import { type IAvailabilityResultHandler } from '../availability-result-handlers/types.js';
-import { type BookingCapacityResponse, type DayAvailability } from '../types.js';
-import { type IAvailabilityChecker } from './types.js';
+import { type IBrowserProvider } from '../browser-providers/types';
+import { type IAvailabilityResultHandler } from '../availability-result-handlers/types';
+import { type BookingCapacityResponse, type DayAvailability } from '../types';
+import { type IAvailabilityChecker } from './types';
 
 export default class InlineChecker implements IAvailabilityChecker {
   private browserProvider: IBrowserProvider;
   private resultHandler: IAvailabilityResultHandler;
 
-  constructor(proxyProvider: IBrowserProvider, resultHandler: IAvailabilityResultHandler) {
-    this.browserProvider = proxyProvider;
+  constructor(browserProvider: IBrowserProvider, resultHandler: IAvailabilityResultHandler) {
+    this.browserProvider = browserProvider;
     this.resultHandler = resultHandler;
   }
 

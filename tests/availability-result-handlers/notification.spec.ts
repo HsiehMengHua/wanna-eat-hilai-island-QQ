@@ -1,3 +1,4 @@
+import '@jest/globals';
 import Notification from '../../src/availability-result-handlers/notification';
 import { DayAvailability } from '../../src/types';
 

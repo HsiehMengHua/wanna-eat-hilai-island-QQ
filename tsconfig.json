@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
-    "sourceMap": true,
+    "noEmit": true
   },
-  "include": ["src/**/*"]
 }
